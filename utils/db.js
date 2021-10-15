@@ -14,6 +14,8 @@ class DBClient {
       if (!err) {
         this.client = client;
         this.db = client.db(this.DB_DATABASE);
+        this.UsersCollection = this.db.collection('users');
+        this.FilesCollection = this.db.collection('files');
       } else {
         console.log(err.message);
         this.db = false;
@@ -26,11 +28,11 @@ class DBClient {
   }
 
   async nbUsers() {
-    return this.db.collection('users').countDocuments();
+    return this.UsersCollection.countDocuments();
   }
 
   async nbFiles() {
-    return this.db.collection('files').countDocuments();
+    return this.FilesCollection.countDocuments();
   }
 }
 

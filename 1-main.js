@@ -7,18 +7,16 @@ const waitConnection = () => {
       await setTimeout(() => {
         i += 1;
         if (i >= 10) {
-          reject()
-        }
-        else if (!dbClient.isAlive()) {
-          repeatFct()
-        }
-        else {
-          resolve()
+          reject();
+        } else if (!dbClient.isAlive()) {
+          repeatFct();
+        } else {
+          resolve();
         }
       }, 1000);
     };
     repeatFct();
-  })
+  });
 };
 
 (async () => {

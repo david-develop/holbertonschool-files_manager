@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
 
-
 class DBClient {
   constructor() {
     // variables
@@ -24,7 +23,7 @@ class DBClient {
   }
 
   isAlive() {
-    return !!this.client && !!this.client.topology && this.client.topology.isConnected()
+    return !!this.client && !!this.client.topology && this.client.topology.isConnected();
   }
 
   async nbUsers() {

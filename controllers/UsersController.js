@@ -1,6 +1,6 @@
+import { ObjectId } from 'mongodb';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
-import { ObjectId } from 'mongodb';
 
 const sha1 = require('sha1');
 
@@ -11,11 +11,11 @@ class UsersController {
     if (!email) return res.status(400).send({ error: 'Missing email' });
     if (!password) return res.status(400).send({ error: 'Missing password' });
 
-    if (await dbClient.UsersCollection.findOne({ email: email })) return res.status(400).send({ error: 'Already exist' });
+    if (await dbClient.UsersCollection.findOne({ email })) return res.status(400).send({ error: 'Already exist' });
 
     const shaPassword = sha1(password);
     const newUser = {
-      email: email,
+      email,
       password: shaPassword,
     };
 

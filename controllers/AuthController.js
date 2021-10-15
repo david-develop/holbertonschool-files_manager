@@ -1,6 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
-import { v4 as uuidv4 } from 'uuid';
 
 const sha1 = require('sha1');
 
@@ -20,7 +20,10 @@ class AuthController {
 
     // Get user from DB
     const shaPassword = sha1(password);
-    const user = await dbClient.UsersCollection.findOne({ email: email, password: shaPassword });
+    const user = await dbClient.UsersCollection.findOne({
+      email,
+      password: shaPassword,
+    });
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     // Generate token 24 H

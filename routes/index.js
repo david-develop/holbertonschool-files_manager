@@ -33,6 +33,6 @@ const cRouting = (app) => {
   router.get('/users/me', (req, res) => {
     UsersController.getMe(req, res);
   });
-}
+};
 
 module.exports = cRouting;

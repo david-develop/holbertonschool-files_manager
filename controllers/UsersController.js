@@ -20,8 +20,8 @@ class UsersController {
     };
 
     const result = await dbClient.UsersCollection.insertOne(newUser);
-
-    return res.status(200).json({ id: result.ops[0]._id, email: result.ops[0].email });
+    console.log(result);
+    return res.status(201).json({ id: result.ops[0]._id, email: result.ops[0].email });
   }
 
   static async getMe(req, res) {

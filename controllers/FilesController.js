@@ -50,7 +50,7 @@ class FilesController {
         userId: user._id,
         name,
         type,
-        parentId: '0',
+        parentId: 0,
       };
       if (parentId) newFolder.parentId = ObjectId(parentId);
       const result = await dbClient.FilesCollection.insertOne(newFolder);
@@ -76,7 +76,7 @@ class FilesController {
       name,
       type,
       isPublic: isPublic || false,
-      parentId: '0',
+      parentId: 0,
       localPath,
     };
     if (parentId) newFile.parentId = ObjectId(parentId);

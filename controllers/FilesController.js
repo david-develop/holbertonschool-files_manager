@@ -238,15 +238,19 @@ class FilesController {
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
 
-    if (fileExist.isPublic === false && !userId) {
-      return res.status(404).json({ error: 'Not found' });
-    }
-
     query = {
       userId: ObjectId(userId),
       _id: ObjectId(fileId),
     };
-    if (!await dbClient.FilesCollection.findOne(query)) return res.status(404).json({ error: 'Not found' });
+    const owner = await dbClient.FilesCollection.findOne(query);
+
+    if ((fileExist.isPublic === false && !userId)) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    if ((fileExist.isPublic === false && !owner)) {
+      return res.status(404).json({ error: 'Not found' });
+    }
 
     if (fileExist.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
 

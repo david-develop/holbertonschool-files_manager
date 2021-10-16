@@ -2,6 +2,7 @@ import express from 'express';
 import AppController from '../controllers/AppController';
 import UsersController from '../controllers/UsersController';
 import AuthController from '../controllers/AuthController';
+import FilesController from '../controllers/FilesController';
 
 const cRouting = (app) => {
   const router = express.Router();
@@ -16,9 +17,13 @@ const cRouting = (app) => {
     AppController.getStats(req, res);
   });
 
-  // UsersController create new
+  // UsersController
   router.post('/users', (req, res) => {
     UsersController.postNew(req, res);
+  });
+
+  router.get('/users/me', (req, res) => {
+    UsersController.getMe(req, res);
   });
 
   // AuthController
@@ -30,8 +35,9 @@ const cRouting = (app) => {
     AuthController.getDisconnect(req, res);
   });
 
-  router.get('/users/me', (req, res) => {
-    UsersController.getMe(req, res);
+  // FilesController
+  router.post('/files', (req, res) => {
+    FilesController.postUpload(req, res);
   });
 };
 

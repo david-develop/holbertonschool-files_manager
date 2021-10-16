@@ -47,6 +47,14 @@ const cRouting = (app) => {
   router.get('/files/:id', (req, res) => {
     FilesController.getShow(req, res);
   });
+
+  router.put('/files/:id/publish', (req, res) => {
+    FilesController.putPublish(req, res);
+  });
+
+  router.put('/files/:id/unpublish', (req, res) => {
+    FilesController.putUnpublish(req, res);
+  });
 };
 
 module.exports = cRouting;

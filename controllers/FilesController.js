@@ -50,16 +50,14 @@ class FilesController {
         userId: user._id,
         name,
         type,
-        parentId: parentId || '0',
+        parentId: '0',
       };
+      if (parentId) newFolder.parentId = ObjectId(parentId);
       const result = await dbClient.FilesCollection.insertOne(newFolder);
       return res.status(201).json({
         id: result.insertedId,
-        userId: user._id,
-        name,
-        type,
+        ...newFolder,
         isPublic: isPublic || false,
-        parentId: parentId || 0,
       });
     }
 
@@ -78,9 +76,10 @@ class FilesController {
       name,
       type,
       isPublic: isPublic || false,
-      parentId: parentId || '0',
+      parentId: '0',
       localPath,
     };
+    if (parentId) newFile.parentId = ObjectId(parentId);
 
     const result = await dbClient.FilesCollection.insertOne(newFile);
     delete newFile.localPath;
@@ -149,6 +148,7 @@ class FilesController {
     if (parentId === 0 || parentId === '0') {
       pipeline = [{ $skip: page * 20 }, { $limit: 20 }];
     }
+    console.log(pipeline);
     const fileCursor = await dbClient.FilesCollection.aggregate(pipeline);
     const fileList = [];
     await fileCursor.forEach((doc) => {

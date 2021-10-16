@@ -127,6 +127,7 @@ class FilesController {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     let parentId = req.query.parentId || '0';
+    if (parentId === '0') parentId = 0;
     let page = Number(req.query.page) || 0;
 
     if (Number.isNaN(page)) page = 0;
@@ -154,7 +155,6 @@ class FilesController {
       const document = { id: doc._id, ...doc };
       delete document.localPath;
       delete document._id;
-      if (document.parentId === '0') document.parentId = 0;
       fileList.push(document);
     });
 

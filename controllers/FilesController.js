@@ -141,14 +141,13 @@ class FilesController {
     }
 
     let pipeline = [
-      { $match: { parentId: req.query.parentId } },
+      { $match: { parentId } },
       { $skip: page * 20 },
       { $limit: 20 },
     ];
     if (parentId === 0 || parentId === '0') {
       pipeline = [{ $skip: page * 20 }, { $limit: 20 }];
     }
-    console.log(pipeline);
     const fileCursor = await dbClient.FilesCollection.aggregate(pipeline);
     const fileList = [];
     await fileCursor.forEach((doc) => {

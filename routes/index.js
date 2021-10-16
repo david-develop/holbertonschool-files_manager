@@ -48,6 +48,10 @@ const cRouting = (app) => {
     FilesController.getShow(req, res);
   });
 
+  router.get('/files/:id/data', (req, res) => {
+    FilesController.getFile(req, res);
+  });
+
   router.put('/files/:id/publish', (req, res) => {
     FilesController.putPublish(req, res);
   });

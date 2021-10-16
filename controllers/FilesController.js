@@ -1,5 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
+import mime from 'mime-types';
+import { promises as fsPromises } from 'fs';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -219,6 +221,44 @@ class FilesController {
     return res.status(200).json({
       ...fileExist,
     });
+  }
+
+  static async getFile(req, res) {
+    const fileId = req.params.id;
+
+    let query = {
+      _id: ObjectId(fileId),
+    };
+    const fileExist = await dbClient.FilesCollection.findOne(query);
+    if (!fileExist) return res.status(404).json({ error: 'Not found' });
+    // check for x-token header
+    const token = req.headers['x-token'];
+
+    // verify token
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+
+    if (fileExist.isPublic === false && !userId) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    query = {
+      userId: ObjectId(userId),
+      _id: ObjectId(fileId),
+    };
+    if (!await dbClient.FilesCollection.findOne(query)) return res.status(404).json({ error: 'Not found' });
+
+    if (fileExist.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
+
+    const mimeType = mime.contentType(fileExist.name);
+    res.setHeader('Content-Type', mimeType);
+    let data;
+    try {
+      data = await fsPromises.readFile(fileExist.localPath);
+    } catch (err) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    return res.status(200).send(data);
   }
 }
 

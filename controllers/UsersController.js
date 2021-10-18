@@ -3,6 +3,9 @@ import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
 const sha1 = require('sha1');
+const Bull = require('bull');
+
+const userQueue = new Bull('userQueue');
 
 class UsersController {
   static async postNew(req, res) {
@@ -20,6 +23,10 @@ class UsersController {
     };
 
     const result = await dbClient.UsersCollection.insertOne(newUser);
+    console.log(result.insertedId);
+    await userQueue.add({
+      userId: result.insertedId,
+    });
     return res.status(201).json({ id: result.ops[0]._id, email: result.ops[0].email });
   }
 

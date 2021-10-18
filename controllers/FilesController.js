@@ -6,6 +6,9 @@ import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
 const fs = require('fs');
+const Bull = require('bull');
+
+const fileQueue = new Bull('fileQueue');
 
 const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
 
@@ -66,7 +69,8 @@ class FilesController {
     // Save local files
     const filename = uuidv4();
     const localPath = `${FOLDER_PATH}/${filename}`;
-    const decodedData = Buffer.from(data, 'base64').toString();
+    const decodedData = Buffer.from(data, 'base64');
+    // const decodedData = Buffer.from(data, 'base64').toString();
 
     fs.writeFileSync(localPath, decodedData, (err) => {
       if (err) throw err;
@@ -84,6 +88,12 @@ class FilesController {
     if (parentId) newFile.parentId = ObjectId(parentId);
 
     const result = await dbClient.FilesCollection.insertOne(newFile);
+    if (type === 'image') {
+      await fileQueue.add({
+        userId: user._id,
+        fileId: result.insertedId,
+      });
+    }
     delete newFile.localPath;
     delete newFile._id;
     newFile.parentId = newFile.parentId === '0' ? 0 : newFile.parentId;
@@ -225,12 +235,18 @@ class FilesController {
 
   static async getFile(req, res) {
     const fileId = req.params.id;
+    const { size } = req.query;
+    const widths = ['500', '250', '100'];
 
     let query = {
       _id: ObjectId(fileId),
     };
     const fileExist = await dbClient.FilesCollection.findOne(query);
     if (!fileExist) return res.status(404).json({ error: 'Not found' });
+    const {
+      isPublic, type, name,
+    } = fileExist;
+    let { localPath } = fileExist;
     // check for x-token header
     const token = req.headers['x-token'];
 
@@ -244,21 +260,23 @@ class FilesController {
     };
     const owner = await dbClient.FilesCollection.findOne(query);
 
-    if ((fileExist.isPublic === false && !userId)) {
+    if ((isPublic === false && !userId)) {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    if ((fileExist.isPublic === false && !owner)) {
+    if ((isPublic === false && !owner)) {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    if (fileExist.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
+    if (type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
 
-    const mimeType = mime.contentType(fileExist.name);
+    const mimeType = mime.contentType(name);
     res.setHeader('Content-Type', mimeType);
     let data;
     try {
-      data = await fsPromises.readFile(fileExist.localPath);
+      if (size) localPath = `${localPath}_${size}`;
+      if (size && !widths.includes(size)) return res.status(404).json({ error: 'Not found' });
+      data = await fsPromises.readFile(localPath);
     } catch (err) {
       return res.status(404).json({ error: 'Not found' });
     }
